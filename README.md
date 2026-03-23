@@ -6,7 +6,7 @@ Este servicio es el encargado de gestionar la identidad de los usuarios dentro d
 
 ---
 
-Responsabilidad del servicio
+##Responsabilidad del servicio
 
 El AuthService centraliza toda la lógica relacionada a seguridad:
 
@@ -21,7 +21,7 @@ Este servicio será consumido por otros microservicios del sistema para validar 
 
 ---
 
-Tecnologías utilizadas
+##Tecnologías utilizadas
 
 - Java 17
 - Spring Boot
@@ -35,6 +35,6 @@ Tecnologías utilizadas
 
 ---
 
-Estructura del proyecto
+##Estructura del proyecto
 
 El proyecto sigue una estructura modular para mantener separación de responsabilidades:
