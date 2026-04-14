@@ -1,13 +1,30 @@
 package com.privdata.authservice.dto.request;
 
-import com.privdata.authservice.model.Company;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.Data;
+
+import java.util.UUID;
 
 @Data
 public class RegisterRequestDTO {
+
+    @NotBlank(message = "El nombre es obligatorio")
     private String firstName;
+
+    @NotBlank(message = "El apellido es obligatorio")
     private String lastName;
+
+    @Email(message = "El correo no tiene un formato válido")
+    @NotBlank(message = "El correo es obligatorio")
     private String email;
+
+    @NotBlank(message = "La contraseña es obligatoria")
     private String password;
-    private Company companyId;
+
+    private String phone;
+
+    @NotNull(message = "El companyId es obligatorio")
+    private UUID companyId;
 }
