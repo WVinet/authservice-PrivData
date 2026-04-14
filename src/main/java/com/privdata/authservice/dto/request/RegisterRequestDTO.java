@@ -23,8 +23,6 @@ public class RegisterRequestDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
-    private String phone;
-
     @NotNull(message = "El companyId es obligatorio")
     private UUID companyId;
 }

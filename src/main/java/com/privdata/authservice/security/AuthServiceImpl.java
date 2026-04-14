@@ -60,7 +60,6 @@ public class AuthServiceImpl implements AuthService {
         user.setFirstName(request.getFirstName());
         user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
-        user.setPhone(request.getPhone());
         user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
         user.setStatus(UserStatus.PENDING);
         user.setCompany(company);
@@ -78,7 +77,6 @@ public class AuthServiceImpl implements AuthService {
                 savedUser.getFirstName(),
                 savedUser.getLastName(),
                 savedUser.getEmail(),
-                savedUser.getPhone(),
                 savedUser.getStatus(),
                 savedUser.getCompany().getId()
         );
