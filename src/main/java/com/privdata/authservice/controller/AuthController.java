@@ -5,6 +5,7 @@ import com.privdata.authservice.dto.request.RegisterRequestDTO;
 import com.privdata.authservice.dto.response.LoginResponseDTO;
 import com.privdata.authservice.dto.response.RegisterResponseDTO;
 import com.privdata.authservice.service.AuthService;
+import com.privdata.authservice.shared.ApiResponseDTO;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -19,14 +20,22 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<RegisterResponseDTO> register(@Valid @RequestBody RegisterRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<RegisterResponseDTO>> register(@Valid @RequestBody RegisterRequestDTO request) {
         RegisterResponseDTO response = authService.register(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
+        ApiResponseDTO<RegisterResponseDTO> apiResponseDTO =
+                new ApiResponseDTO<>(true, "Usuario registrado correctamente", response);
+
+        return ResponseEntity.ok(apiResponseDTO);
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO request) {
+    public ResponseEntity<ApiResponseDTO<LoginResponseDTO>> login(@Valid @RequestBody LoginRequestDTO request) {
         LoginResponseDTO response = authService.login(request);
-        return ResponseEntity.ok(response);
+
+        ApiResponseDTO<LoginResponseDTO> apiResponseDTO =
+                new ApiResponseDTO<>(true, "Inicio de sesión correcto", response);
+
+        return ResponseEntity.ok(apiResponseDTO);
     }
 }

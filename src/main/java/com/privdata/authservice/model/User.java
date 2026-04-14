@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -14,8 +15,8 @@ import java.util.UUID;
 @Table(name = "users")
 @Getter
 @Setter
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 public class User {
 
     @Id
@@ -28,17 +29,14 @@ public class User {
     @Column(name = "last_name", nullable = false)
     private String lastName;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
     private String email;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
-    @Column(name = "phone")
-    private String phone;
-
+    @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
     private UserStatus status;
 
     @Column(name = "last_login_at")
@@ -52,13 +50,10 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<UserRole> userRoles = new ArrayList<>();
+
+    @ManyToOne
     @JoinColumn(name = "company_id", nullable = false)
     private Company company;
-
-    @OneToMany(mappedBy = "user")
-    private List<UserRole> userRoles;
-
-    @OneToMany(mappedBy = "user")
-    private List<RefreshToken> refreshTokens;
 }

@@ -7,6 +7,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -44,5 +45,5 @@ public class Company {
     private LocalDateTime updatedAt;
 
     @OneToMany(mappedBy = "company")
-    private List<User> users;
+    private List<User> users = new ArrayList<>();
 }

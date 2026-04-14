@@ -16,7 +16,6 @@ public class RegisterResponseDTO {
     private String firstName;
     private String lastName;
     private String email;
-    private String phone;
     private UserStatus status;
     private UUID companyId;
 }
