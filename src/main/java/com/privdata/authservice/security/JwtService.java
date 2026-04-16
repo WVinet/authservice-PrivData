@@ -5,33 +5,57 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
+import java.lang.invoke.CallSite;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 
 @Service
 public class JwtService {
 
+    //clave secreta del token
     @Value("${application.security.jwt.secret-key}")
     private String secretKey;
 
+    //tiempo de expiracion del token
     @Value("${application.security.jwt.expiration}")
     private long jwtExpiration;
 
+    //extrae el username(email) desde el token
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
     }
 
+    //Extrae la lista de roles desde el token
+    public List<String> extractRoles(String token){
+        return extractClaim(token, claims -> claims.get("roles", List.class));
+    }
+
+    //genera token basico
     public String generateToken(UserDetails userDetails) {
         return generateToken(new HashMap<>(), userDetails);
     }
 
+    //Genera token con claims extra
     public String generateToken(Map<String, Object> extraClaims, UserDetails userDetails) {
+
+        //Se obtienen las authorities del usuario y las transforma en string
+        List<String> roles = userDetails.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        //agregamos roles al mapa de claims
+        extraClaims.put("roles", roles);
+
+        //Se construye el JWT
         return Jwts.builder()
                 .claims(extraClaims)
                 .subject(userDetails.getUsername())
@@ -41,16 +65,19 @@ public class JwtService {
                 .compact();
     }
 
+    //Valida si el token corresponde al usuario y no esta expirado
     public boolean isTokenValid(String token, UserDetails userDetails) {
         final String username = extractUsername(token);
         return username.equals(userDetails.getUsername()) && !isTokenExpired(token);
     }
 
+    //extrae cualquier claim usando una funcion
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
     }
 
+    //Extrae todos los claims del token
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
                 .verifyWith(getSignInKey())
@@ -59,10 +86,12 @@ public class JwtService {
                 .getPayload();
     }
 
+    //verifica si el token expiro
     private boolean isTokenExpired(String token) {
         return extractClaim(token, Claims::getExpiration).before(new Date());
     }
 
+    //convierte el secret en una clave firmante
     private SecretKey getSignInKey() {
         byte[] keyBytes = Decoders.BASE64.decode(secretKey);
         return Keys.hmacShaKeyFor(keyBytes);

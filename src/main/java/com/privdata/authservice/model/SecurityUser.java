@@ -21,12 +21,16 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
+
+        //Si el usuario no tiene roles, no retorna authorities
         if (user.getUserRoles() == null || user.getUserRoles().isEmpty()) {
             return Collections.emptyList();
         }
 
+        //Convierte cada rol a formato ROLE_X para spring security
         return user.getUserRoles().stream()
-                .map(userRole -> new SimpleGrantedAuthority("ROLE_" + userRole.getRole().getName()))
+                .map(userRole -> new SimpleGrantedAuthority(
+                        "ROLE_" + userRole.getRole().getName()))
                 .toList();
     }
 
