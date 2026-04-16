@@ -15,6 +15,7 @@ import com.privdata.authservice.repository.RoleRepository;
 import com.privdata.authservice.repository.UserRepository;
 import com.privdata.authservice.repository.UserRoleRepository;
 import com.privdata.authservice.service.AuthService;
+import com.privdata.authservice.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -33,6 +34,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final RoleService roleService;
 
     @Override
     public RegisterResponseDTO register(RegisterRequestDTO request) {
@@ -44,17 +46,15 @@ public class AuthServiceImpl implements AuthService {
             );
         }
 
+        //cambiar por metodo que valide id de la empresa
         Company company = companyRepository.findById(request.getCompanyId())
                 .orElseThrow(() -> new ResponseStatusException(
                         HttpStatus.NOT_FOUND,
                         "Empresa no encontrada"
                 ));
+        /////////////////////
 
-        Role defaultRole = roleRepository.findByName("EMPLOYEE")
-                .orElseThrow(() -> new ResponseStatusException(
-                        HttpStatus.NOT_FOUND,
-                        "Rol por defecto no encontrado"
-                ));
+        Role defaultRole = roleService.findByName("USER");
 
         User user = new User();
         user.setFirstName(request.getFirstName());

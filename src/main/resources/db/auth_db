@@ -1,0 +1,312 @@
+-- =========================================
+-- PRIVDATA - AUTHSERVICE
+-- PostgreSQL schema adaptado a FASE 2
+-- Roles: SUPER_ADMIN, ADMIN, USER, COMPANY
+-- =========================================
+
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
+-- =========================================
+-- ENUMS
+-- IMPORTANTE:
+-- Si en Java sigues usando INCATIVE por error tipográfico,
+-- cambia eso en el código a INACTIVE.
+-- =========================================
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'company_status') THEN
+        CREATE TYPE company_status AS ENUM ('ACTIVE', 'INACTIVE', 'SUSPENDED');
+    END IF;
+END
+$$;
+
+DO $$
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_status') THEN
+        CREATE TYPE user_status AS ENUM ('PENDING', 'ACTIVE', 'BLOCKED', 'INACTIVE');
+    END IF;
+END
+$$;
+
+-- =========================================
+-- TABLE: companies
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS companies (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    legal_name VARCHAR(150) NOT NULL,
+    trade_name VARCHAR(150),
+    tax_id VARCHAR(20) NOT NULL UNIQUE,
+    status company_status NOT NULL DEFAULT 'ACTIVE',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- =========================================
+-- TABLE: roles
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS roles (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    is_active BOOLEAN NOT NULL DEFAULT TRUE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- =========================================
+-- TABLE: users
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    company_id UUID NOT NULL,
+    first_name VARCHAR(100) NOT NULL,
+    last_name VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    phone VARCHAR(20),
+    status user_status NOT NULL DEFAULT 'PENDING',
+    last_login_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_users_company
+        FOREIGN KEY (company_id)
+        REFERENCES companies(id)
+        ON DELETE RESTRICT
+);
+
+-- =========================================
+-- TABLE: user_roles
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS user_roles (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    role_id INTEGER NOT NULL,
+    assigned_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_user_roles_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_user_roles_role
+        FOREIGN KEY (role_id)
+        REFERENCES roles(id)
+        ON DELETE RESTRICT,
+
+    CONSTRAINT uq_user_roles_user_role UNIQUE (user_id, role_id)
+);
+
+-- =========================================
+-- TABLE: refresh_tokens
+-- =========================================
+
+CREATE TABLE IF NOT EXISTS refresh_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    user_id UUID NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    revoked_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT fk_refresh_tokens_user
+        FOREIGN KEY (user_id)
+        REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+-- =========================================
+-- INDEXES
+-- =========================================
+
+CREATE INDEX IF NOT EXISTS idx_users_company_id
+    ON users(company_id);
+
+CREATE INDEX IF NOT EXISTS idx_users_email
+    ON users(email);
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_user_id
+    ON user_roles(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_user_roles_role_id
+    ON user_roles(role_id);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_user_id
+    ON refresh_tokens(user_id);
+
+CREATE INDEX IF NOT EXISTS idx_refresh_tokens_expires_at
+    ON refresh_tokens(expires_at);
+
+-- =========================================
+-- SEED ROLES
+-- =========================================
+
+INSERT INTO roles (name, description, is_active)
+VALUES
+    ('SUPER_ADMIN', 'Administrador global de la plataforma', TRUE),
+    ('ADMIN', 'Administrador de la empresa cliente', TRUE),
+    ('USER', 'Usuario normal del sistema', TRUE),
+    ('COMPANY', 'Rol asociado a empresa', TRUE)
+ON CONFLICT (name) DO NOTHING;
+
+-- =========================================
+-- SEED COMPANY DE PRUEBA
+-- =========================================
+
+INSERT INTO companies (legal_name, trade_name, tax_id, status)
+VALUES
+    ('PrivData SPA', 'PrivData', '76123456-7', 'ACTIVE'),
+    ('Acme Compliance SPA', 'Acme', '76999999-1', 'ACTIVE')
+ON CONFLICT (tax_id) DO NOTHING;
+
+-- =========================================
+-- SEED USERS DE PRUEBA
+-- Password para todos: Privdata123*
+-- Se genera con bcrypt desde PostgreSQL usando pgcrypto
+-- =========================================
+
+INSERT INTO users (
+    company_id,
+    first_name,
+    last_name,
+    email,
+    password_hash,
+    phone,
+    status
+)
+SELECT
+    c.id,
+    'Sofia',
+    'Superadmin',
+    'superadmin@privdata.cl',
+    crypt('Privdata123*', gen_salt('bf', 10)),
+    '+56911111111',
+    'ACTIVE'
+FROM companies c
+WHERE c.tax_id = '76123456-7'
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO users (
+    company_id,
+    first_name,
+    last_name,
+    email,
+    password_hash,
+    phone,
+    status
+)
+SELECT
+    c.id,
+    'Andres',
+    'Admin',
+    'admin@privdata.cl',
+    crypt('Privdata123*', gen_salt('bf', 10)),
+    '+56922222222',
+    'ACTIVE'
+FROM companies c
+WHERE c.tax_id = '76123456-7'
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO users (
+    company_id,
+    first_name,
+    last_name,
+    email,
+    password_hash,
+    phone,
+    status
+)
+SELECT
+    c.id,
+    'Paula',
+    'Usuario',
+    'user@privdata.cl',
+    crypt('Privdata123*', gen_salt('bf', 10)),
+    '+56933333333',
+    'ACTIVE'
+FROM companies c
+WHERE c.tax_id = '76123456-7'
+ON CONFLICT (email) DO NOTHING;
+
+INSERT INTO users (
+    company_id,
+    first_name,
+    last_name,
+    email,
+    password_hash,
+    phone,
+    status
+)
+SELECT
+    c.id,
+    'Carlos',
+    'Company',
+    'company@privdata.cl',
+    crypt('Privdata123*', gen_salt('bf', 10)),
+    '+56944444444',
+    'ACTIVE'
+FROM companies c
+WHERE c.tax_id = '76999999-1'
+ON CONFLICT (email) DO NOTHING;
+
+-- =========================================
+-- ASIGNACIÓN DE ROLES
+-- =========================================
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'SUPER_ADMIN'
+WHERE u.email = 'superadmin@privdata.cl'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'ADMIN'
+WHERE u.email = 'admin@privdata.cl'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'USER'
+WHERE u.email = 'user@privdata.cl'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+INSERT INTO user_roles (user_id, role_id)
+SELECT u.id, r.id
+FROM users u
+JOIN roles r ON r.name = 'COMPANY'
+WHERE u.email = 'company@privdata.cl'
+ON CONFLICT (user_id, role_id) DO NOTHING;
+
+-- =========================================
+-- CONSULTAS ÚTILES
+-- =========================================
+
+-- Ver empresas
+-- SELECT id, legal_name, trade_name, tax_id, status FROM companies;
+
+-- Ver roles
+-- SELECT id, name, description FROM roles ORDER BY id;
+
+-- Ver usuarios
+-- SELECT id, first_name, last_name, email, status, company_id FROM users;
+
+-- Ver usuarios con sus roles
+-- SELECT
+--     u.email,
+--     u.first_name,
+--     u.last_name,
+--     r.name AS role_name
+-- FROM users u
+-- JOIN user_roles ur ON ur.user_id = u.id
+-- JOIN roles r ON r.id = ur.role_id
+-- ORDER BY u.email, r.name;
