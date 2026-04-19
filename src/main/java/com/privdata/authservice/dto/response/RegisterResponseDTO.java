@@ -13,9 +13,8 @@ import java.util.UUID;
 public class RegisterResponseDTO {
 
     private UUID id;
-    private String firstName;
-    private String lastName;
     private String email;
     private UserStatus status;
-    private UUID companyId;
+    private UUID organizationId;
+    private UUID personId;
 }

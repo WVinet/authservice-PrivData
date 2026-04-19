@@ -19,6 +19,12 @@ public class UserRole {
     @GeneratedValue
     private UUID id;
 
+    @Column(name = "assigned_by", nullable = false)
+    private UUID assignedBy;
+
+    @Column(name = "is_active", nullable = false)
+    private boolean isActive;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -27,7 +33,11 @@ public class UserRole {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
+
     @CreationTimestamp
     @Column(name = "assigned_at", nullable = false, updatable = false)
     private LocalDateTime assignedAt;
+
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
 }
