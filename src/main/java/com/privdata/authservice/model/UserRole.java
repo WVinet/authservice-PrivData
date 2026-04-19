@@ -25,6 +25,13 @@ public class UserRole {
     @Column(name = "is_active", nullable = false)
     private boolean isActive;
 
+    @CreationTimestamp
+    @Column(name = "assigned_at", nullable = false, updatable = false)
+    private LocalDateTime assignedAt;
+
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -34,10 +41,5 @@ public class UserRole {
     private Role role;
 
 
-    @CreationTimestamp
-    @Column(name = "assigned_at", nullable = false, updatable = false)
-    private LocalDateTime assignedAt;
 
-    @Column(name = "expires_at", nullable = false)
-    private LocalDateTime expiresAt;
 }
