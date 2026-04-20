@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_roles")
+@Table(name = "user_roles", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "role_id"})})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -22,8 +23,8 @@ public class UserRole {
     @Column(name = "assigned_by", nullable = false)
     private UUID assignedBy;
 
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive;
+    @Column(nullable = false)
+    private Boolean active = true;
 
     @CreationTimestamp
     @Column(name = "assigned_at", nullable = false, updatable = false)

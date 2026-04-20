@@ -37,13 +37,13 @@ public class User {
     private String passwordHash;
 
     @Column(name = "failed_login_attempts", nullable = false)
-    private Integer failedLoginAttempts;
+    private Integer failedLoginAttempts = 0;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatus status;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean isActive;
 
     //tiempos

@@ -10,12 +10,6 @@ import java.util.UUID;
 @Data
 public class RegisterRequestDTO {
 
-    @NotBlank(message = "El nombre es obligatorio")
-    private String firstName;
-
-    @NotBlank(message = "El apellido es obligatorio")
-    private String lastName;
-
     @Email(message = "El correo no tiene un formato válido")
     @NotBlank(message = "El correo es obligatorio")
     private String email;

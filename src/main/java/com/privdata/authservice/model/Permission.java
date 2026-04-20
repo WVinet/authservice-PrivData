@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
+@Table(name = "permissions", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"modules", "action"})})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -31,7 +33,7 @@ public class Permission {
     @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "is_active", nullable = false)
+    @Column(name = "active", nullable = false)
     private boolean isActive;
 
     @CreationTimestamp

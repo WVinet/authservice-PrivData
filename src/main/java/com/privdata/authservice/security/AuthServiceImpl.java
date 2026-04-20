@@ -28,11 +28,11 @@ import java.util.UUID;
 public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
-    private final RoleRepository roleRepository;
     private final UserRoleRepository userRoleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RoleService roleService;
+    private final CustomUserDetailsService customUserDetailsService;
 
     @Override
     public RegisterResponseDTO register(RegisterRequestDTO request) {
@@ -52,7 +52,7 @@ public class AuthServiceImpl implements AuthService {
         }
 
 
-        Role defaultRole = roleService.findByName("BASIC_USER");
+        Role defaultRole = roleService.findByName("END_USER");
 
         User user = new User();
         user.setEmail(request.getEmail());
@@ -107,7 +107,7 @@ public class AuthServiceImpl implements AuthService {
         user.setLastLoginAt(LocalDateTime.now());
         userRepository.save(user);
 
-        SecurityUser securityUser = new SecurityUser(user);
+        SecurityUser securityUser = (SecurityUser) customUserDetailsService.loadUserByUsername(user.getEmail());
         String jwtToken = jwtService.generateToken(securityUser);
 
         return new LoginResponseDTO(jwtToken);

@@ -6,12 +6,13 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
+@Table(name = "role_permissions", uniqueConstraints = {
+                @UniqueConstraint(columnNames = {"role_id", "permission_id"})})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -20,6 +21,9 @@ public class RolePermissions {
     @Id
     @GeneratedValue
     private UUID id;
+
+    @Column(name = "active", nullable = false)
+    private boolean isActive;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false)
