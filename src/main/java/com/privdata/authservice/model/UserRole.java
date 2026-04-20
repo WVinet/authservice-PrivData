@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name = "user_roles")
+@Table(name = "user_roles", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"user_id", "role_id"})})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -19,6 +20,19 @@ public class UserRole {
     @GeneratedValue
     private UUID id;
 
+    @Column(name = "assigned_by", nullable = false)
+    private UUID assignedBy;
+
+    @Column(nullable = false)
+    private Boolean active = true;
+
+    @CreationTimestamp
+    @Column(name = "assigned_at", nullable = false, updatable = false)
+    private LocalDateTime assignedAt;
+
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
@@ -27,7 +41,6 @@ public class UserRole {
     @JoinColumn(name = "role_id", nullable = false)
     private Role role;
 
-    @CreationTimestamp
-    @Column(name = "assigned_at", nullable = false, updatable = false)
-    private LocalDateTime assignedAt;
+
+
 }

@@ -1,47 +1,51 @@
 package com.privdata.authservice.model;
 
-import com.privdata.authservice.enums.UserStatus;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.UUID;
 
-@AllArgsConstructor
-@NoArgsConstructor
+
 @Data
 public class SecurityUser implements UserDetails {
 
-    private User user;
+    private final UUID id;
+    private final String email;
+    private final String password;
+    private final boolean active;
+    private final Collection<? extends GrantedAuthority> authorities;
+
+    public SecurityUser(UUID id,
+                        String email,
+                        String password,
+                        boolean active,
+                        Collection<? extends GrantedAuthority> authorities) {
+        this.id = id;
+        this.email = email;
+        this.password = password;
+        this.active = active;
+        this.authorities = authorities;
+    }
+
+    public UUID getId() {
+        return id;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-
-        //Si el usuario no tiene roles, no retorna authorities
-        if (user.getUserRoles() == null || user.getUserRoles().isEmpty()) {
-            return Collections.emptyList();
-        }
-
-        //Convierte cada rol a formato ROLE_X para spring security
-        return user.getUserRoles().stream()
-                .map(userRole -> new SimpleGrantedAuthority(
-                        "ROLE_" + userRole.getRole().getName()))
-                .toList();
+        return authorities;
     }
 
     @Override
     public String getPassword() {
-        return user.getPasswordHash();
+        return password;
     }
 
     @Override
     public String getUsername() {
-        return user.getEmail();
+        return email;
     }
 
     @Override
@@ -51,7 +55,7 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public boolean isAccountNonLocked() {
-        return user.getStatus() != UserStatus.BLOCKED;
+        return true;
     }
 
     @Override
@@ -61,6 +65,6 @@ public class SecurityUser implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        return user.getStatus() == UserStatus.ACTIVE || user.getStatus() == UserStatus.PENDING;
+        return active;
     }
 }

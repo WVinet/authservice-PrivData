@@ -10,12 +10,6 @@ import java.util.UUID;
 @Data
 public class RegisterRequestDTO {
 
-    @NotBlank(message = "El nombre es obligatorio")
-    private String firstName;
-
-    @NotBlank(message = "El apellido es obligatorio")
-    private String lastName;
-
     @Email(message = "El correo no tiene un formato válido")
     @NotBlank(message = "El correo es obligatorio")
     private String email;
@@ -23,6 +17,9 @@ public class RegisterRequestDTO {
     @NotBlank(message = "La contraseña es obligatoria")
     private String password;
 
-    @NotNull(message = "El companyId es obligatorio")
-    private UUID companyId;
+    @NotNull(message = "El organizationId es obligatorio")
+    private UUID organizationId;
+
+    @NotNull(message = "El ID de la persona es obligatorio")
+    private UUID personId;
 }

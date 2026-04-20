@@ -1,7 +1,10 @@
 package com.privdata.authservice.model;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -10,39 +13,37 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "roles", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"name"})})
+@Table(name = "permissions", uniqueConstraints = {
+        @UniqueConstraint(columnNames = {"modules", "action"})})
 @Getter
 @Setter
-@NoArgsConstructor
 @AllArgsConstructor
-public class Role {
-
+@NoArgsConstructor
+public class Permission {
     @Id
     @GeneratedValue
     private UUID id;
 
-    @Column(nullable = false, unique = true, length = 50)
-    private String name;
+    @Column(name = "module", nullable = false)
+    private String module;
 
+    @Column(name = "action", nullable = false)
+    private String action;
+
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "active", nullable = false)
-    private Boolean isActive = true;
+    private boolean isActive;
 
     @CreationTimestamp
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
-    @OneToMany(mappedBy = "role")
-    private List<UserRole> userRoles;
-
-    @OneToMany(mappedBy = "role")
+    @OneToMany(mappedBy = "permission")
     private List<RolePermissions> rolePermissions;
-
-
 }

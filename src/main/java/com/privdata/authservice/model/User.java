@@ -23,11 +23,12 @@ public class User {
     @GeneratedValue
     private UUID id;
 
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
+    @Column(name = "person_id", nullable = false)
+    private UUID personId;
 
-    @Column(name = "last_name", nullable = false)
-    private String lastName;
+    @Column(name = "organization_id", nullable = false)
+    private UUID organizationId;
+
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -35,9 +36,23 @@ public class User {
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
+    @Column(name = "failed_login_attempts", nullable = false)
+    private Integer failedLoginAttempts = 0;
+
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
     private UserStatus status;
+
+    @Column(name = "active", nullable = false)
+    private boolean isActive;
+
+    //tiempos
+
+    @Column(name = "locked_until", nullable = false)
+    private LocalDateTime lockedUntil;
+
+    @Column(name = "password_changed_at", nullable = false)
+    private LocalDateTime passwordChangedAt;
 
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
@@ -50,10 +65,9 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    //Relaciones
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private List<UserRole> userRoles = new ArrayList<>();
 
-    @ManyToOne
-    @JoinColumn(name = "company_id", nullable = false)
-    private Company company;
+
 }

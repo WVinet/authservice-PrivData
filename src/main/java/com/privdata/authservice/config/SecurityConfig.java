@@ -17,9 +17,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    //Filtro JWT
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
-    //Proovedor de autenticacion
     private final DaoAuthenticationProvider authenticationProvider;
 
     @Bean
@@ -28,23 +26,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/auth/**",
+                                "/auth/login",
+                                "/auth/register",
                                 "/swagger-ui/**",
                                 "/v3/api-docs/**"
                         ).permitAll()
-                        .requestMatchers("/api/superadmin/**").hasRole("SUPER_ADMIN")
-                        .requestMatchers("/api/admin/**").hasAnyRole("ADMIN", "SUPER_ADMIN")
-                        .requestMatchers("/api/company/**").hasAnyRole("COMPANY","ADMIN","SUPER_ADMIN")
-                        .requestMatchers("/api/user/**").hasAnyRole("USER","COMPANY","ADMIN","SUPER_ADMIN")
                         .anyRequest().authenticated()
                 )
-                //politica stateless
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                //proveedor de autenticacion
                 .authenticationProvider(authenticationProvider)
-                //Filtro JWT antes de filtro estandar de username/pass
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
                 .build();
     }
