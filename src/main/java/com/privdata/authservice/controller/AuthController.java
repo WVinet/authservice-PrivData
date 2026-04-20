@@ -54,16 +54,16 @@ public class AuthController {
         );
     }
 
-    //pruebas @preauthorize
-    @GetMapping("/test/arco")
-    @PreAuthorize("hasAuthority('ARCO_VIEW')")
-    public ResponseEntity<String> testArco() {
-        return ResponseEntity.ok("Tiene permiso ARCO_VIEW");
-    }
+    @PostMapping("/users/{userId}/roles")
+    @org.springframework.security.access.prepost.PreAuthorize("hasAuthority('ROLE_ASSIGN')")
+    public ResponseEntity<ApiResponseDTO<Void>> assignRoleToUser(
+            @PathVariable java.util.UUID userId,
+            @Valid @RequestBody com.privdata.authservice.dto.request.AssignRoleRequestDTO request
+    ) {
+        authService.assignRoleToUser(userId, request.getRoleName());
 
-    @GetMapping("/test/admin")
-    @PreAuthorize("hasAuthority('USER_CREATE')")
-    public ResponseEntity<String> testAdmin() {
-        return ResponseEntity.ok("Tiene permiso USER_CREATE");
+        return ResponseEntity.ok(
+                new ApiResponseDTO<>(true, "Rol asignado correctamente", null)
+        );
     }
 }

@@ -15,4 +15,6 @@ public interface AuthService {
 
     MeResponseDTO me(SecurityUser securityUser);
 
+    void assignRoleToUser(java.util.UUID userId, String roleName);
+
 }

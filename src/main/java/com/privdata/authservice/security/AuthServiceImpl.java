@@ -23,6 +23,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -134,5 +135,32 @@ public class AuthServiceImpl implements AuthService {
                 user.getStatus(),
                 authorities
         );
+    }
+
+    @Override
+    public void assignRoleToUser(UUID userId, String roleName) {
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado"
+                ));
+
+        Role role = roleService.findByName(roleName);
+
+        if (userRoleRepository.existsByUserAndRole(user, role)) {
+            throw new ResponseStatusException(
+                    HttpStatus.BAD_REQUEST,
+                    "El usuario ya tiene asignado ese rol"
+            );
+        }
+
+        UserRole userRole = new UserRole();
+        userRole.setUser(user);
+        userRole.setRole(role);
+        userRole.setActive(true);
+        userRole.setAssignedAt(LocalDateTime.now());
+
+        userRoleRepository.save(userRole);
     }
 }
