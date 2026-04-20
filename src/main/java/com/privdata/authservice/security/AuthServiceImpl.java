@@ -3,25 +3,26 @@ package com.privdata.authservice.security;
 import com.privdata.authservice.dto.request.LoginRequestDTO;
 import com.privdata.authservice.dto.request.RegisterRequestDTO;
 import com.privdata.authservice.dto.response.LoginResponseDTO;
+import com.privdata.authservice.dto.response.MeResponseDTO;
 import com.privdata.authservice.dto.response.RegisterResponseDTO;
 import com.privdata.authservice.enums.UserStatus;
 import com.privdata.authservice.model.Role;
 import com.privdata.authservice.model.SecurityUser;
 import com.privdata.authservice.model.User;
 import com.privdata.authservice.model.UserRole;
-import com.privdata.authservice.repository.RoleRepository;
 import com.privdata.authservice.repository.UserRepository;
 import com.privdata.authservice.repository.UserRoleRepository;
 import com.privdata.authservice.service.AuthService;
 import com.privdata.authservice.service.RoleService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -111,5 +112,27 @@ public class AuthServiceImpl implements AuthService {
         String jwtToken = jwtService.generateToken(securityUser);
 
         return new LoginResponseDTO(jwtToken);
+    }
+
+    public MeResponseDTO me(SecurityUser securityUser) {
+        User user = userRepository.findById(securityUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado"
+                ));
+
+        List<String> authorities = securityUser.getAuthorities()
+                .stream()
+                .map(GrantedAuthority::getAuthority)
+                .toList();
+
+        return new MeResponseDTO(
+                user.getId(),
+                user.getEmail(),
+                user.getOrganizationId(),
+                user.getPersonId(),
+                user.getStatus(),
+                authorities
+        );
     }
 }
