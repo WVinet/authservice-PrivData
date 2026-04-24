@@ -49,6 +49,96 @@ El proyecto sigue una estructura modular para mantener separación de responsabi
 
 ---
 
+## Modelo de Datos Principal
+
+El AuthService utiliza un modelo de datos relacional para gestionar usuarios, roles, permisos y autenticación. A continuación se describen las entidades principales:
+
+### User
+- **id** (UUID): Identificador único
+- **personId** (UUID): ID de la persona asociada
+- **organizationId** (UUID): ID de la organización
+- **email** (String): Correo electrónico único
+- **passwordHash** (String): Contraseña encriptada
+- **failedLoginAttempts** (Integer): Intentos fallidos de login
+- **status** (UserStatus): Estado del usuario (ej. ACTIVE, INACTIVE)
+- **isActive** (boolean): Si el usuario está activo
+- **lockedUntil** (LocalDateTime): Fecha/hora hasta la que está bloqueado
+- **passwordChangedAt** (LocalDateTime): Último cambio de contraseña
+- **lastLoginAt** (LocalDateTime): Último login
+- **Timestamps**: createdAt, updatedAt
+
+### Role
+- **id** (UUID): Identificador único
+- **name** (String): Nombre único del rol
+- **description** (String): Descripción
+- **isActive** (boolean): Si el rol está activo
+- **Timestamps**: createdAt, updatedAt
+
+### Permission
+- **id** (UUID): Identificador único
+- **module** (String): Módulo funcional
+- **action** (String): Acción permitida
+- **description** (String): Descripción
+- **isActive** (boolean): Si el permiso está activo
+- **Timestamps**: createdAt, updatedAt
+
+### UserRole
+- **id** (UUID): Identificador único
+- **user** (User): Usuario asignado
+- **role** (Role): Rol asignado
+- **assignedBy** (UUID): Quién asignó el rol
+- **active** (boolean): Si la asignación está activa
+- **assignedAt** (LocalDateTime): Fecha de asignación
+- **expiresAt** (LocalDateTime): Fecha de expiración
+
+### RolePermissions
+- **id** (UUID): Identificador único
+- **role** (Role): Rol asociado
+- **permission** (Permission): Permiso asociado
+- **isActive** (boolean): Si la relación está activa
+- **createdAt** (LocalDateTime): Fecha de creación
+
+### RefreshToken
+- **id** (UUID): Identificador único
+- **user** (User): Usuario asociado
+- **token** (String): Token de refresco
+- **expiresAt** (LocalDateTime): Expiración
+- **revokedAt** (LocalDateTime): Revocación
+- **createdAt** (LocalDateTime): Creación
+- **updatedAt** (LocalDateTime): Actualización
+
+### SecurityUser
+- Implementa `UserDetails` de Spring Security para autenticación
+- Contiene: id, email, password, active, authorities (roles/permisos)
+
+---
+
+### Función de cada entidad
+
+- **User**: Representa a los usuarios del sistema. Almacena información de autenticación, estado, organización y persona asociada. Es el sujeto principal de autenticación y autorización.
+
+- **Role**: Define los roles que agrupan permisos y determinan el nivel de acceso de los usuarios (ej: ADMIN, USER, SUPER_ADMIN, COMPANY). Un usuario puede tener varios roles.
+
+- **Permission**: Representa permisos granulares sobre acciones específicas en módulos del sistema (ej: ARCO_VIEW, USER_CREATE). Los roles se componen de permisos.
+
+- **UserRole**: Relaciona usuarios con roles, permitiendo asignar múltiples roles a un usuario y controlar vigencia/asignador de cada relación.
+
+- **RolePermissions**: Relaciona roles con permisos, permitiendo que cada rol tenga múltiples permisos y cada permiso pertenezca a varios roles.
+
+- **RefreshToken**: Gestiona los tokens de refresco para sesiones de usuario, permitiendo renovar el JWT sin reautenticación y controlar revocación/expiración.
+
+- **SecurityUser**: Implementación de Spring Security para representar al usuario autenticado en el contexto de seguridad, incluyendo roles y permisos.
+
+---
+
+### Relaciones principales
+
+- Un **User** puede tener varios **UserRole** (muchos a muchos con **Role**)
+- Un **Role** puede tener varios **RolePermissions** (muchos a muchos con **Permission**)
+- Un **User** puede tener varios **RefreshToken**
+
+---
+
 ## API Endpoints
 
 Las respuestas de los endpoints devuelven una estructura estandarizada basada en `ApiResponseDTO`:
