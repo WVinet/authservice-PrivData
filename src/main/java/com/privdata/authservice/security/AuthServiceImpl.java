@@ -63,6 +63,7 @@ public class AuthServiceImpl implements AuthService {
         user.setActive(true);
         user.setOrganizationId(request.getOrganizationId());
         user.setPersonId(request.getPersonId());
+        user.setPasswordChangedAt(LocalDateTime.now());
 
         User savedUser = userRepository.save(user);
 
@@ -70,6 +71,7 @@ public class AuthServiceImpl implements AuthService {
         userRole.setUser(savedUser);
         userRole.setRole(defaultRole);
         userRole.setActive(true);
+        userRole.setAssignedBy(savedUser.getId());
         userRole.setAssignedAt(LocalDateTime.now());
 
         userRoleRepository.save(userRole);

@@ -287,14 +287,7 @@ Todas las respuestas siguen el formato:
   "success": true,
   "message": "Inicio de sesión correcto",
   "data": {
-    "accessToken": "<jwt_token>",
-    "refreshToken": "<refresh_token>",
-    "user": {
-      "id": "UUID",
-      "email": "usuario@ejemplo.com",
-      "roles": ["USER"],
-      "status": "ACTIVE"
-    }
+    "token": "<jwt_token>"
   }
 }
 ```
