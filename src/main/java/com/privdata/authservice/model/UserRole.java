@@ -30,7 +30,7 @@ public class UserRole {
     @Column(name = "assigned_at", nullable = false, updatable = false)
     private LocalDateTime assignedAt;
 
-    @Column(name = "expires_at", nullable = false)
+    @Column(name = "expires_at")
     private LocalDateTime expiresAt;
 
     @ManyToOne(fetch = FetchType.LAZY)

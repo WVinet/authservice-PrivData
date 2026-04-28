@@ -48,7 +48,7 @@ public class User {
 
     //tiempos
 
-    @Column(name = "locked_until", nullable = false)
+    @Column(name = "locked_until")
     private LocalDateTime lockedUntil;
 
     @Column(name = "password_changed_at", nullable = false)
